@@ -79,22 +79,28 @@ def run():
             logging.debug(f"{post_id} already processed; continuing.")
             continue
 
+        if 'Removed:' not in submission.link_flair_text:
+            logging.info(f"{post_id} was flaired, but not removed; continuing")
+            continue
+
         if not flair_class:
             logging.info(f"{post_id}'s author, {flair['user']}, did not have a flair, so assigning one.")
             sub.flair.set(redditor=flair["user"], css_class=f"1s {post_id}")
             db.add_post(post_id)
             continue
 
-        # the format of the flair_css_class will look like Xs AAAAA BBBBB CCCCC
-        # here, we need just the X
+        # the list will look like ["2s", "i23und", "xnak23"]. we need the first character ('2') from the 0th element,
+        # that's why i'm using the double [0]
         strikes_amount = int(flair_class.split(' ')[0][0]) + 1
 
+        # constructing and setting the new which includes the incremented strike count, and the new post ID
         new_flair = f"{strikes_amount}s {flair['flair_css_class'][3:]} {post_id}"
-
         sub.flair.set(redditor=flair["user"], css_class=new_flair)
+
+        # saving in the DB
         db.add_post(post_id)
 
-        logging.info(f"{flair['user']} now at {strikes_amount} strikes.")
+        logging.info(f"{flair['user']} is now at {strikes_amount} strikes (last post removed: {post_id}).")
 
         # checking whether the user deserves a ban
         if strikes_amount >= 3:
