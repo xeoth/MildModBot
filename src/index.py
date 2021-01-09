@@ -69,8 +69,8 @@ def run():
         for f in sub.flair(redditor=action.target_author):
             flair = f
 
-        flair_class = flair.flair_css_class
-        post_id = flair.target_fullname[3:]
+        flair_class = flair["flair_css_class"]
+        post_id = action.target_fullname[3:]
 
         # checking whether the post was already processed
         if db.check_post(post_id) or post_id in flair:
@@ -85,35 +85,36 @@ def run():
 
         # the format of the flair_css_class will look like Xs AAAAA BBBBB CCCCC
         # here, we need just the X
-        strikes_amount = int(flair.css_class.split(' ')[0][0]) + 1
+        print(flair_class.split(' '))
+        strikes_amount = int(flair_class.split(' ')[0][0]) + 1
 
-        new_flair = f"{strikes_amount} {flair.css_class[3:]}"
+        new_flair = f"{strikes_amount}s {flair.css_class[3:]} {post_id}"
 
-        sub.mod.flair.set(redditor=flair.user, css_class=new_flair)
+        sub.mod.flair.set(redditor=flair["user"], css_class=new_flair)
         db.add_post(flair.target_fullname[3:])
 
-        logging.debug(f"{flair.user} now at {strikes_amount}.")
+        logging.debug(f"{flair['user']} now at {strikes_amount}.")
 
         # checking whether the user deserves a ban
         if strikes_amount >= 3:
             message = f"""/r/{sub.display_name}/about/banned
             
             
-                    Greetings u/{flair.user}, you have been banned for reaching three strikes as per our [moderation policy](https://reddit.com/r/mildlyinteresting/wiki/index#wiki_moderation_policy).
+                    Greetings u/{flair["user"]}, you have been banned for reaching three strikes as per our [moderation policy](https://reddit.com/r/mildlyinteresting/wiki/index#wiki_moderation_policy).
                     
                     Your strikes are:
                     """
 
             # adding the actual strikes to the message
             for strike in flair.flair_css_class.split(' ')[1:]:  # we don't want the 'Xs' part
-                message += f"/r/{sub.display_name}/comments/{strike}"
+                message += f"- /r/{sub.display_name}/comments/{strike}"
 
             sub.message(
                 title="A user has reached three strikes!",
                 message=message
             )
 
-            logging.debug(f"Message about {flair.user} sent.")
+            logging.debug(f"Message about {flair['user']} sent.")
 
 
 if __name__ == "__main__":
