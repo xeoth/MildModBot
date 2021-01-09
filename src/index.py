@@ -26,7 +26,7 @@ class DatabaseHelper:
 
     def __init__(self):
         # will only be used for caching processed posts, the strikes will be saved as user flair
-        self.cnx = sqlite3.connect(":memory:")
+        self.cnx = sqlite3.connect("posts.db")
         self.cur = self.cnx.cursor()
 
         # initialize the schema
@@ -70,7 +70,8 @@ def run():
             flair = f
 
         flair_class = flair["flair_css_class"]
-        post_id = action.target_fullname[3:]
+        submission = reddit.submission(action.target_fullname[3:])
+        post_id = submission.id
 
         # checking whether the post was already processed
         if db.check_post(post_id) or post_id in flair:
@@ -78,20 +79,19 @@ def run():
             continue
 
         if not flair_class:
-            logging.debug(f"{post_id}'s author, {flair.user}, did not have a flair, so assigning one.")
-            sub.mod.flair.set(redditor=flair.user, css_class=f"1s {post_id}")
+            logging.debug(f"{post_id}'s author, {flair['user']}, did not have a flair, so assigning one.")
+            sub.flair.set(redditor=flair["user"], css_class=f"1s {post_id}")
             db.add_post(post_id)
             continue
 
         # the format of the flair_css_class will look like Xs AAAAA BBBBB CCCCC
         # here, we need just the X
-        print(flair_class.split(' '))
         strikes_amount = int(flair_class.split(' ')[0][0]) + 1
 
-        new_flair = f"{strikes_amount}s {flair.css_class[3:]} {post_id}"
+        new_flair = f"{strikes_amount}s {flair['flair_css_class'][3:]} {post_id}"
 
-        sub.mod.flair.set(redditor=flair["user"], css_class=new_flair)
-        db.add_post(flair.target_fullname[3:])
+        sub.flair.set(redditor=flair["user"], css_class=new_flair)
+        db.add_post(post_id)
 
         logging.debug(f"{flair['user']} now at {strikes_amount}.")
 
@@ -106,11 +106,11 @@ def run():
                     """
 
             # adding the actual strikes to the message
-            for strike in flair.flair_css_class.split(' ')[1:]:  # we don't want the 'Xs' part
+            for strike in flair["flair_css_class"].split(' ')[1:]:  # we don't want the 'Xs' part
                 message += f"- /r/{sub.display_name}/comments/{strike}"
 
             sub.message(
-                title="A user has reached three strikes!",
+                subject="A user has reached three strikes!",
                 message=message
             )
 
