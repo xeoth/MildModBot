@@ -1,4 +1,4 @@
-# MildlyModBot
+# MildModBot
 
 A bot providing an efficient way to execute r/MildlyInteresting's [preventive restriction policy](https://www.reddit.com/r/mildlyinteresting/wiki/index#wiki_moderation_policy).
 
