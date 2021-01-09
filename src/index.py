@@ -94,6 +94,27 @@ def run():
 
         logging.debug(f"{flair.user} now at {strikes_amount}.")
 
+        # checking whether the user deserves a ban
+        if strikes_amount >= 3:
+            message = f"""/r/{sub.display_name}/about/banned
+            
+            
+                    Greetings u/{flair.user}, you have been banned for reaching three strikes as per our [moderation policy](https://reddit.com/r/mildlyinteresting/wiki/index#wiki_moderation_policy).
+                    
+                    Your strikes are:
+                    """
+
+            # adding the actual strikes to the message
+            for strike in flair.flair_css_class.split(' ')[1:]:  # we don't want the 'Xs' part
+                message += f"/r/{sub.display_name}/comments/{strike}"
+
+            sub.message(
+                title="A user has reached three strikes!",
+                message=message
+            )
+
+            logging.debug(f"Message about {flair.user} sent.")
+
 
 if __name__ == "__main__":
     if reddit.read_only:
