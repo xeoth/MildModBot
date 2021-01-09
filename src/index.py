@@ -2,7 +2,6 @@ import praw
 from os import getenv
 import sqlite3
 import logging
-from datetime import timedelta, datetime
 from sys import exit
 from prawcore import NotFound
 
@@ -41,8 +40,8 @@ class DatabaseHelper:
 
     def add_post(self, post_id: str):
         self.cur.execute(
-            "INSERT INTO posts VALUES (?, ?)",
-            (post_id, int(datetime.utcnow().timestamp())),
+            "INSERT INTO posts VALUES (?, strftime('%s', 'now'))",
+            (post_id,)
         )
         self.cnx.commit()
 
@@ -76,19 +75,21 @@ def run():
             logging.debug(f"{post_id} already processed; continuing.")
             continue
 
+        # we don't want to assign strikes for 'overdone' and 'quality post' flairs
         if 'Removed:' not in submission.link_flair_text:
             logging.info(f"{post_id} was flaired, but not removed; continuing")
             continue
 
+        # first time offenders do not have any class
         if not flair_class:
             logging.info(f"{post_id}'s author, {flair['user']}, did not have a flair, so assigning one.")
+    
             sub.flair.set(redditor=flair["user"], css_class=f"1s {post_id}")
             db.add_post(post_id)
             continue
 
-        # the list will look like ["2s", "i23und", "xnak23"]. we need the first character ('2') from the 0th element,
-        # that's why i'm using the double [0]
-        strikes_amount = int(flair_class.split(' ')[0][0]) + 1
+        # the flair will look somewhat like '2s ndue43 aqsnz', and we need to get the strike count (the first character)
+        strikes_amount = int(flair_class[0]) + 1
 
         # constructing and setting the new which includes the incremented strike count, and the new post ID
         new_flair = f"{strikes_amount}s {flair['flair_css_class'][3:]} {post_id}"
@@ -110,7 +111,7 @@ def run():
     """
 
             # adding the actual strikes to the message
-            for strike in new_flair.split(' ')[1:]:  # we don't want the 'Xs' part
+            for strike in new_flair.split(' ')[1:]:  # [1:] because we don't want the '2s' part, only the IDs
                 message += f"\n    - /r/{sub.display_name}/comments/{strike}"
 
             sub.message(
