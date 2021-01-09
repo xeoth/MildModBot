@@ -58,9 +58,6 @@ def run():
     # listening for post flair edits
     log_stream = sub.mod.stream.log(action="editflair")
     for action in log_stream:
-        """
-        'description': None, 'target_body': None, 'mod_id36': 'v16iabx', 'created_utc': 1604159047.0, 'subreddit': 'xeothtest', 'target_title': 'ps 3', 'target_permalink': '/r/xeothtest/comments/hhz1a4/ps_3/', 'subreddit_name_prefixed': 'r/xeothtest', 'details': 'flair_edit', 'action': 'editflair', 'target_author': 'alteoth', 'target_fullname': 't3_hhz1a4', 'sr_id36': '2i4bah', 'id': 'ModAction_e9427abc-1b8f-11eb-91ee-9e594cb2ce46', '_mod': 'Xeoth'}b
-        """
         # we only want flair changes on posts
         if not action.target_permalink:
             continue
