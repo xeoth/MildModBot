@@ -17,7 +17,7 @@ reddit = praw.Reddit(
 logging.basicConfig(
     datefmt="%X %d.%m.%Y",
     format="[%(module)s] %(asctime)s | %(levelname)s: %(message)s",
-    level=logging.DEBUG,
+    level=logging.INFO,
 )
 
 
@@ -32,7 +32,7 @@ class DatabaseHelper:
         # initialize the schema
         self.cur.execute(
             """
-        CREATE TABLE posts (
+        CREATE TABLE IF NOT EXISTS posts (
             post_id TEXT,
             date_added INTEGER
         );
@@ -56,7 +56,8 @@ def run():
     db = DatabaseHelper()
 
     # listening for post flair edits
-    for action in sub.mod.log(action="editflair"):
+    log_stream = sub.mod.stream.log(action="editflair")
+    for action in log_stream:
         """
         'description': None, 'target_body': None, 'mod_id36': 'v16iabx', 'created_utc': 1604159047.0, 'subreddit': 'xeothtest', 'target_title': 'ps 3', 'target_permalink': '/r/xeothtest/comments/hhz1a4/ps_3/', 'subreddit_name_prefixed': 'r/xeothtest', 'details': 'flair_edit', 'action': 'editflair', 'target_author': 'alteoth', 'target_fullname': 't3_hhz1a4', 'sr_id36': '2i4bah', 'id': 'ModAction_e9427abc-1b8f-11eb-91ee-9e594cb2ce46', '_mod': 'Xeoth'}b
         """
@@ -79,7 +80,7 @@ def run():
             continue
 
         if not flair_class:
-            logging.debug(f"{post_id}'s author, {flair['user']}, did not have a flair, so assigning one.")
+            logging.info(f"{post_id}'s author, {flair['user']}, did not have a flair, so assigning one.")
             sub.flair.set(redditor=flair["user"], css_class=f"1s {post_id}")
             db.add_post(post_id)
             continue
@@ -93,28 +94,28 @@ def run():
         sub.flair.set(redditor=flair["user"], css_class=new_flair)
         db.add_post(post_id)
 
-        logging.debug(f"{flair['user']} now at {strikes_amount}.")
+        logging.info(f"{flair['user']} now at {strikes_amount} strikes.")
 
         # checking whether the user deserves a ban
         if strikes_amount >= 3:
-            message = f"""/r/{sub.display_name}/about/banned
+            message = f"""
+/r/{sub.display_name}/about/banned
             
-            
-                    Greetings u/{flair["user"]}, you have been banned for reaching three strikes as per our [moderation policy](https://reddit.com/r/mildlyinteresting/wiki/index#wiki_moderation_policy).
+    Greetings u/{flair["user"]}, you have been banned for reaching three strikes as per our [moderation policy](https://reddit.com/r/mildlyinteresting/wiki/index#wiki_moderation_policy).
                     
-                    Your strikes are:
-                    """
+    Your strikes are:
+    """
 
             # adding the actual strikes to the message
-            for strike in flair["flair_css_class"].split(' ')[1:]:  # we don't want the 'Xs' part
-                message += f"- /r/{sub.display_name}/comments/{strike}"
+            for strike in new_flair.split(' ')[1:]:  # we don't want the 'Xs' part
+                message += f"\n    - /r/{sub.display_name}/comments/{strike}"
 
             sub.message(
                 subject="A user has reached three strikes!",
                 message=message
             )
 
-            logging.debug(f"Message about {flair['user']} sent.")
+            logging.info(f"Message about {flair['user']} sent.")
 
 
 if __name__ == "__main__":
