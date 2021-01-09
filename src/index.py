@@ -53,6 +53,7 @@ class DatabaseHelper:
 
 def run():
     sub = reddit.subreddit(getenv("MMB_SUBREDDIT"))
+    db = DatabaseHelper()
 
     # listening for post flair edits
     for action in sub.mod.log(action="editflair"):
@@ -71,10 +72,17 @@ def run():
         flair_class = flair.flair_css_class
         if not flair_class:
             sub.mod.flair.set(redditor=flair.user, css_class=f"1s {flair.target_fullname[3:]}")
+            db.add_post(flair.target_fullname[3:])
             continue
 
         # the format of the flair_css_class will look like Xs AAAAA BBBBB CCCCC
-        flair_list = flair_class.split(' ')
+        # here, we need just the X
+        strikes_amount = int(flair.css_class.split(' ')[0][0]) + 1
+
+        new_flair = f"{strikes_amount} {flair.css_class[3:]}"
+
+        sub.mod.flair.set(redditor=flair.user, css_class=new_flair)
+        db.add_post(flair.target_fullname[3:])
 
 
 if __name__ == "__main__":
