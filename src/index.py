@@ -17,7 +17,7 @@ reddit = praw.Reddit(
 logging.basicConfig(
     datefmt="%X %d.%m.%Y",
     format="[%(module)s] %(asctime)s | %(levelname)s: %(message)s",
-    level=logging.INFO,
+    level=logging.DEBUG,
 )
 
 
@@ -65,14 +65,22 @@ def run():
             continue
 
         # first, we need to get the flair for a specified user
-        # we're fetching one but it's still not subscriptable
+        # we're fetching one but it's still not subscriptable, hence the loop
         for f in sub.flair(redditor=action.target_author):
             flair = f
 
         flair_class = flair.flair_css_class
+        post_id = flair.target_fullname[3:]
+
+        # checking whether the post was already processed
+        if db.check_post(post_id) or post_id in flair:
+            logging.debug(f"{post_id} already processed; continuing.")
+            continue
+
         if not flair_class:
-            sub.mod.flair.set(redditor=flair.user, css_class=f"1s {flair.target_fullname[3:]}")
-            db.add_post(flair.target_fullname[3:])
+            logging.debug(f"{post_id}'s author, {flair.user}, did not have a flair, so assigning one.")
+            sub.mod.flair.set(redditor=flair.user, css_class=f"1s {post_id}")
+            db.add_post(post_id)
             continue
 
         # the format of the flair_css_class will look like Xs AAAAA BBBBB CCCCC
@@ -84,6 +92,8 @@ def run():
         sub.mod.flair.set(redditor=flair.user, css_class=new_flair)
         db.add_post(flair.target_fullname[3:])
 
+        logging.debug(f"{flair.user} now at {strikes_amount}.")
+
 
 if __name__ == "__main__":
     if reddit.read_only:
@@ -91,6 +101,7 @@ if __name__ == "__main__":
         exit(1)
 
     try:
+        logging.info('The bot is running.')
         run()
     except NotFound:
         logging.fatal(
