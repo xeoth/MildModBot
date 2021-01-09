@@ -40,8 +40,7 @@ class DatabaseHelper:
 
     def add_post(self, post_id: str):
         self.cur.execute(
-            "INSERT INTO posts VALUES (?, strftime('%s', 'now'))",
-            (post_id,)
+            "INSERT INTO posts VALUES (?, strftime('%s', 'now'))", (post_id,)
         )
         self.cnx.commit()
 
@@ -76,13 +75,15 @@ def run():
             continue
 
         # we don't want to assign strikes for 'overdone' and 'quality post' flairs
-        if 'Removed:' not in submission.link_flair_text:
+        if "Removed:" not in submission.link_flair_text:
             logging.info(f"{post_id} was flaired, but not removed; continuing")
             continue
 
         # first time offenders do not have any class
         if not flair_class:
-            logging.info(f"{post_id}'s author, {flair['user']}, did not have a flair, so assigning one.")
+            logging.info(
+                f"{post_id}'s author, {flair['user']}, did not have a flair, so assigning one."
+            )
     
             sub.flair.set(redditor=flair["user"], css_class=f"1s {post_id}")
             db.add_post(post_id)
@@ -98,7 +99,9 @@ def run():
         # saving in the DB
         db.add_post(post_id)
 
-        logging.info(f"{flair['user']} is now at {strikes_amount} strikes (last post removed: {post_id}).")
+        logging.info(
+            f"{flair['user']} is now at {strikes_amount} strikes (last post removed: {post_id})."
+        )
 
         # checking whether the user deserves a ban
         if strikes_amount >= 3:
@@ -109,16 +112,15 @@ def run():
                     
     Your strikes are:
     """
-
+    
             # adding the actual strikes to the message
-            for strike in new_flair.split(' ')[1:]:  # [1:] because we don't want the '2s' part, only the IDs
+            # fmt: off
+            for strike in new_flair.split(" ")[1:]:  # [1:] because we don't want the '2s' part, only the IDs
                 message += f"\n    - /r/{sub.display_name}/comments/{strike}"
-
-            sub.message(
-                subject="A user has reached three strikes!",
-                message=message
-            )
-
+            # fmt: on
+    
+            sub.message(subject="A user has reached three strikes!", message=message)
+    
             logging.info(f"Message about {flair['user']} sent.")
 
 
@@ -128,7 +130,7 @@ if __name__ == "__main__":
         exit(1)
 
     try:
-        logging.info('The bot is running.')
+        logging.info("The bot is running.")
         run()
     except NotFound:
         logging.fatal(
