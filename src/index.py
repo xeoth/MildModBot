@@ -3,6 +3,9 @@ from os import getenv
 import sqlite3
 import logging
 from datetime import timedelta, datetime
+from sys import exit
+from prawcore import NotFound
+from praw.models import ModAction
 
 reddit = praw.Reddit(
     client_id=getenv("MMB_CLIENT_ID"),
@@ -14,7 +17,7 @@ reddit = praw.Reddit(
 
 logging.basicConfig(
     datefmt="%X %d.%m.%Y",
-    format="%(asctime)s | %(levelname)s: %(message)s",
+    format="[%(module)s] %(asctime)s | %(levelname)s: %(message)s",
     level=logging.INFO,
 )
 
@@ -47,3 +50,27 @@ class DatabaseHelper:
     def check_post(self, post_id: str) -> bool:
         self.cur.execute("SELECT 0 FROM posts WHERE post_id=?", (post_id,))
         return bool(self.cur.fetchone())
+
+
+def run():
+    sub = reddit.subreddit(getenv('MMB_SUBREDDIT'))
+
+    # listening for post flair edits
+    for action in sub.mod.log(action='editflair'):
+        # we only want flair changes on posts
+        if not action.target_permalink:
+            continue
+
+        # first, we need to get the flair for a specified user
+
+
+if __name__ == '__main__':
+    if reddit.read_only:
+        logging.critical('The reddit instance is read-only! Terminating...')
+        exit(1)
+
+    try:
+        run()
+    except NotFound:
+        logging.fatal('The moderation log is not available to the signed in user. Are you using a mod account?')
+        exit(1)
