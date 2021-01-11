@@ -29,7 +29,7 @@ $env:MMB_SUBREDDIT="your subreddit"
 6. Use `pip3 install -r requirements.txt` to install bot's dependencies
 7. Finally, use `py src\index.py` to run the bot.
 
-If you did everything right, there bot will output a message saying "INFO: The bot is running."
+If you did everything right, you will get a message saying "INFO: The bot is running."
 
 ### Linux
 
@@ -49,4 +49,4 @@ export MMB_CLIENT_ID="your client ID" \
 6. Use `pip3 install -r requirements.txt` to install bot's dependencies
 7. Finally, use `python3 src/index.py` to run the bot.
 
-If you did everything right, there bot will output a message saying "INFO: The bot is running."
+If you did everything right, you will get a message saying "INFO: The bot is running."
