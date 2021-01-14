@@ -105,19 +105,24 @@ def run():
 
         # checking whether the user deserves a ban
         if strikes_amount >= 3:
-            message = f"""
-/r/{sub.display_name}/about/banned
+            # composing the message
+            message = f"/r/{sub.display_name}/about/banned\n\n^| "
+            strikes = new_flair.split(" ")[1:]  # [1:] because we don't want the '2s' part, only the IDs
             
+            # adding quick links to posts
+            for strike in strikes:
+                message += f"[^({strike})](https://redd.it/{strike} \"View post with ID {strike}\") ^| "
+                
+            # adding the actual content
+            message += f"""\n\n
     Greetings u/{flair["user"]}, you have been banned for reaching three strikes as per our [moderation policy](https://reddit.com/r/mildlyinteresting/wiki/index#wiki_moderation_policy).
                     
     Your strikes are:
     """
     
             # adding the actual strikes to the message
-            # fmt: off
-            for strike in new_flair.split(" ")[1:]:  # [1:] because we don't want the '2s' part, only the IDs
+            for strike in strikes:
                 message += f"\n    - /r/{sub.display_name}/comments/{strike}"
-            # fmt: on
     
             sub.message(subject="A user has reached three strikes!", message=message)
     
