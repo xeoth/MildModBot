@@ -70,7 +70,7 @@ def run():
         post_id = submission.id
 
         # checking whether the post was already processed
-        if db.check_post(post_id) or post_id in flair:
+        if db.check_post(post_id) or post_id in flair_class:
             logging.debug(f"{post_id} already processed; continuing.")
             continue
 
