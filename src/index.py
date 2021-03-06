@@ -70,7 +70,7 @@ def run():
         post_id = submission.id
 
         # checking whether the post was already processed
-        if db.check_post(post_id) or post_id in flair_class:
+        if flair_class is not None and (db.check_post(post_id) or post_id in flair_class):
             logging.debug(f"{post_id} already processed; continuing.")
             continue
 
@@ -84,7 +84,7 @@ def run():
             logging.info(
                 f"{post_id}'s author, {flair['user']}, did not have a flair, so assigning one."
             )
-    
+
             sub.flair.set(redditor=flair["user"], css_class=f"1s {post_id}")
             db.add_post(post_id)
             continue
@@ -107,25 +107,27 @@ def run():
         if strikes_amount >= 3:
             # composing the message
             message = f"/r/{sub.display_name}/about/banned\n\n^| "
-            strikes = new_flair.split(" ")[1:]  # [1:] because we don't want the '2s' part, only the IDs
-            
+            # [1:] because we don't want the '2s' part, only the IDs
+            strikes = new_flair.split(" ")[1:]
+
             # adding quick links to posts
             for strike in strikes:
                 message += f"[^({strike})](https://redd.it/{strike} \"View post with ID {strike}\") ^| "
-                
+
             # adding the actual content
             message += f"""\n\n
     Greetings u/{flair["user"]}, you have been banned for reaching three strikes as per our [moderation policy](https://reddit.com/r/mildlyinteresting/wiki/index#wiki_moderation_policy).
                     
     Your strikes are:
     """
-    
+
             # adding the actual strikes to the message
             for strike in strikes:
                 message += f"\n    - /r/{sub.display_name}/comments/{strike}"
-    
-            sub.message(subject="A user has reached three strikes!", message=message)
-    
+
+            sub.message(subject="A user has reached three strikes!",
+                        message=message)
+
             logging.info(f"Message about {flair['user']} sent.")
 
 
