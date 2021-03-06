@@ -1,8 +1,8 @@
 import praw
+import sys
 from os import getenv
 import sqlite3
 import logging
-from sys import exit
 from prawcore import NotFound
 
 reddit = praw.Reddit(
@@ -134,7 +134,7 @@ def run():
 if __name__ == "__main__":
     if reddit.read_only:
         logging.critical("The reddit instance is read-only! Terminating...")
-        exit(1)
+        sys.exit(1)
 
     try:
         logging.info("The bot is running.")
@@ -143,4 +143,4 @@ if __name__ == "__main__":
         logging.fatal(
             "The moderation log is not available to the signed in user. Are you using a mod account?"
         )
-        exit(1)
+        sys.exit(1)
