@@ -10,7 +10,7 @@ reddit = praw.Reddit(
     client_secret=getenv("MMB_CLIENT_SECRET"),
     username=getenv("MMB_USERNAME"),
     password=getenv("MMB_PASSWORD"),
-    user_agent="{}'s MildModBot".format(getenv("MMB_SUBREDDIT")),
+    user_agent=f"{getenv('MMB_SUBREDDIT')}'s MildModBot",
 )
 
 logging.basicConfig(
