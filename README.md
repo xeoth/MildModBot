@@ -10,6 +10,31 @@ So, how does this policy work? You can learn everything from the link above, but
 
 To set up the bot, you'll need a client ID and a client secret. Get those by making a script-type app at https://reddit.com/prefs/apps
 
+## Using Docker
+
+This is the recommended route, as it's much more straightforward and requires less technical skills.
+
+For this path, you will need to [install Docker](https://www.docker.com/products/docker-desktop).
+
+1. Use `docker pull xeoth/mildmodbot` to pull the image.
+2. Create an `env.txt` file and put the following content inside:
+
+```env
+MMB_USERNAME=your_bot_username
+MMB_PASSWORD=your_bot_password
+MMB_CLIENT_ID=your_bot_client_id
+MMB_CLIENT_SECRET=your_bot_client_secret
+MMB_SUBREDDIT=mildlyinteresting
+```
+
+3. Run the image with `docker run --env-file ./env.txt --restart unless-stopped --detach xeoth/mildmodbot` (of course replacing `./env.txt` with the actual path to that file).
+
+You should see an ID printed out. To see whether it works, use `docker ps` and check if "Up X seconds" is the status of xeoth/mildmodbot. If so, it should be up and running. Check you sub's modlog to see whether it's assigning flairs.
+
+You can view the logs using `docker logs [container ID here]` or with the desktop app.
+
+## Manually
+
 ### Windows
 
 1. Right-click on Start and click "Windows Powershell"
