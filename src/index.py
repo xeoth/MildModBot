@@ -73,6 +73,10 @@ def run():
         if flair_class is not None and (db.check_post(post_id) or post_id in flair_class):
             logging.debug(f"{post_id} already processed; continuing.")
             continue
+            
+        # checking if the submission hasn't been deleted
+        if not submission:
+            continue
 
         # we don't want to assign strikes for 'overdone' and 'quality post' flairs
         if "Removed:" not in submission.link_flair_text:
