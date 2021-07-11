@@ -75,7 +75,7 @@ def run():
             continue
             
         # we don't want to assign strikes for 'overdone' and 'quality post' flairs
-        if submission.link_flair_text is not None "Removed:" not in submission.link_flair_text:
+        if submission.link_flair_text is not None or "Removed:" not in submission.link_flair_text:
             logging.info(f"{post_id} was flaired, but not removed; continuing")
             continue
 
