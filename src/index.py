@@ -19,10 +19,20 @@ logging.basicConfig(
     level=logging.INFO,
 )
 
+SPAMBOT_MESSAGE = """
+## Attention!
+
+u/{} is a reposting bot. Users like them are not real. They're automated bots meant to gain karma and then sell the account.
+
+Common behavior for these bots is making posts after a long period of inactivity to avoid detection by systems that filter out posts made by new accounts.
+
+This account has been banned, but there are more like it. Please help us get rid of them by reporting them to us. They ruin the fun for everyone, as the community gets less fresh content.
+"""
+
 
 class DatabaseHelper:
     """Provides utilities for caching with SQLite"""
-
+    
     def __init__(self):
         # will only be used for caching processed posts, the strikes will be saved as user flair
         self.cnx = sqlite3.connect("posts.db")
@@ -73,9 +83,15 @@ def run():
         if flair_class is not None and (db.check_post(post_id) or post_id in flair_class):
             logging.debug(f"{post_id} already processed; continuing.")
             continue
-            
-        # we don't want to assign strikes for 'overdone' and 'quality post' flairs
-        if submission.link_flair_text is not None or "Removed:" not in submission.link_flair_text:
+
+        if "Spam Bot" in submission.link_flair_text:
+            # we're dealing with a spam bot. ban and leave a comment explaining the thing.
+            logging.info(f"{post_id}'s OP was determined to be a spambot, so they'll be banned.")
+            sub.banned.add(submission.author.name)
+            submission.reply(SPAMBOT_MESSAGE.format(submission.author.name)).mod.distinguish(how="yes", sticky=True)
+            continue
+        elif submission.link_flair_text is not None or "Removed:" not in submission.link_flair_text:
+            # we don't want to assign strikes for 'overdone' and 'quality post' flairs
             logging.info(f"{post_id} was flaired, but not removed; continuing")
             continue
 
@@ -84,7 +100,7 @@ def run():
             logging.info(
                 f"{post_id}'s author, {flair['user']}, did not have a flair, so assigning one."
             )
-
+    
             sub.flair.set(redditor=flair["user"], css_class=f"1s {post_id}")
             db.add_post(post_id)
             continue
