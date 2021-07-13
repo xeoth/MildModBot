@@ -90,7 +90,7 @@ def run():
             sub.banned.add(submission.author.name)
             submission.reply(SPAMBOT_MESSAGE.format(submission.author.name)).mod.distinguish(how="yes", sticky=True)
             continue
-        elif submission.link_flair_text is not None or "Removed:" not in submission.link_flair_text:
+        elif submission.link_flair_text is not None and "Removed:" not in submission.link_flair_text:
             # we don't want to assign strikes for 'overdone' and 'quality post' flairs
             logging.info(f"{post_id} was flaired, but not removed; continuing")
             continue
