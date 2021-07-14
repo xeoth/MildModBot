@@ -141,7 +141,7 @@ def run():
             for strike in strikes:
                 message += f"\n    - /r/{sub.display_name}/comments/{strike}"
 
-            sub.message(subject="A user has reached three strikes!",
+            sub.message(subject="[Notification] A user has reached three strikes!",
                         message=message)
 
             logging.info(f"Message about {flair['user']} sent.")
