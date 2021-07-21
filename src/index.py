@@ -90,6 +90,7 @@ def run():
             logging.info(f"{post_id}'s OP was determined to be a spambot, so they'll be banned.")
             sub.banned.add(submission.author.name)
             submission.reply(SPAMBOT_MESSAGE.format(submission.author.name)).mod.distinguish(how="yes", sticky=True)
+            db.add_post(submission.id)
             continue
         elif submission.link_flair_text is not None and "Removed:" not in submission.link_flair_text:
             # we don't want to assign strikes for 'overdone' and 'quality post' flairs
