@@ -84,7 +84,8 @@ def run():
             logging.debug(f"{post_id} already processed; continuing.")
             continue
 
-        if submission and submission.link_flair_text and "Spam Bot" in submission.link_flair_text:
+        if submission and submission.link_flair_text and "Spam Bot" in submission.link_flair_text and \
+                submission.author and submission.author.name:
             # we're dealing with a spam bot. ban and leave a comment explaining the thing.
             logging.info(f"{post_id}'s OP was determined to be a spambot, so they'll be banned.")
             sub.banned.add(submission.author.name)
