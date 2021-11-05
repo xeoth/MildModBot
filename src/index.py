@@ -142,6 +142,8 @@ def run():
             # adding the actual strikes to the message
             for strike in strikes:
                 message += f"\n    - /r/{sub.display_name}/comments/{strike}"
+            
+            message += "\n\nHowever, your ban can be rescinded 30 days after you were banned via the process outlined in our moderation policy, [accessible here](https://www.reddit.com/r/mildlyinteresting/wiki/index#wiki_lifting_a_restriction)."
 
             sub.message(subject="[Notification] A user has reached three strikes!",
                         message=message)
