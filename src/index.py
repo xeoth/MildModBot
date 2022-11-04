@@ -113,6 +113,8 @@ def run():
         # constructing and setting the new which includes the incremented strike count, and the new post ID
         new_flair = f"{strikes_amount}s {flair['flair_css_class'][3:]} {post_id}"
         sub.flair.set(redditor=flair["user"], css_class=new_flair)
+        
+        submission.mod.remove()
 
         # saving in the DB
         db.add_post(post_id)
