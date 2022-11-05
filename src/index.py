@@ -1,4 +1,5 @@
 import praw
+from praw import models
 import sys
 from os import getenv
 import sqlite3
@@ -76,7 +77,7 @@ def run():
             flair = f
 
         flair_class = flair["flair_css_class"]
-        submission = reddit.submission(action.target_fullname[3:])
+        submission: models.Submission = reddit.submission(action.target_fullname[3:])
         post_id = submission.id
 
         # checking whether the post was already processed
@@ -89,6 +90,7 @@ def run():
             # we're dealing with a spam bot. ban and leave a comment explaining the thing.
             logging.info(f"{post_id}'s OP was determined to be a spambot, so they'll be banned.")
             sub.banned.add(submission.author.name)
+            submission.mod.remove()
             submission.reply(SPAMBOT_MESSAGE.format(submission.author.name)).mod.distinguish(how="yes", sticky=True)
             db.add_post(submission.id)
             continue
@@ -96,6 +98,8 @@ def run():
             # we don't want to assign strikes for 'overdone' and 'quality post' flairs
             logging.info(f"{post_id} was flaired, but not removed; continuing")
             continue
+            
+        submission.mod.remove()
 
         # first time offenders do not have any class
         if not flair_class:
@@ -114,7 +118,6 @@ def run():
         new_flair = f"{strikes_amount}s {flair['flair_css_class'][3:]} {post_id}"
         sub.flair.set(redditor=flair["user"], css_class=new_flair)
         
-        submission.mod.remove()
 
         # saving in the DB
         db.add_post(post_id)
