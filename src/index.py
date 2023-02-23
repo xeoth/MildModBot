@@ -93,7 +93,9 @@ def run():
                 sub.banned.add(submission.author.name)
             except NameError:
                 pass
-            submission.mod.remove()
+            # check if already removed to avoid double modlogs
+            if not submission.removed_by_category:
+                submission.mod.remove()
             submission.reply(SPAMBOT_MESSAGE.format(submission.author.name)).mod.distinguish(how="yes", sticky=True)
             db.add_post(submission.id)
             continue
@@ -102,7 +104,8 @@ def run():
             logging.info(f"{post_id} was flaired, but not removed; continuing")
             continue
             
-        submission.mod.remove()
+        if not submission.removed_by_category:
+            submission.mod.remove()
 
         # first time offenders do not have any class
         if not flair_class:
