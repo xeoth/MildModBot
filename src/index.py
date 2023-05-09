@@ -5,6 +5,9 @@ from os import getenv
 import sqlite3
 import logging
 from prawcore import NotFound
+from dotenv import load_dotenv
+
+load_dotenv()
 
 reddit = praw.Reddit(
     client_id=getenv("MMB_CLIENT_ID"),
